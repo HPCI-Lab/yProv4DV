@@ -14,3 +14,8 @@ gh_context/
 yProv_client.py
 
 .DS_Store
+
+*.dot
+*.json
+*.csv
+*.svg

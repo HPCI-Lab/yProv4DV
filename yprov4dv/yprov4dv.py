@@ -60,7 +60,7 @@ class ProvTracker:
         repo = _get_git_remote_url()
         if repo is not None:
             commit_hash = _get_git_revision_hash()
-            activity.add_attributes({f"{self.PREFIX}:source_code", os.path.join(repo, commit_hash)})
+            activity.add_attributes({f"{self.PREFIX}:source_code": os.path.join(repo, commit_hash)})
         reqs = _requirements_lookup(".")
         if reqs: 
             activity.add_attributes({f"{self.PREFIX}:requirements": reqs})
