@@ -45,3 +45,9 @@ All possible fields are listed below:
 - `YPROV4DS_CREATE_RO_CRATE`: (`True` or `False`) whether the ro-crate zip is created or not; 
 - `YPROV4DS_DEFAULT_NAMESPACE`: (str) changes the default namespace inside the provenance file
 - `YPROV4DS_VERBOSE`: (`True` or `False`), 
+
+For an example, run: 
+
+```bash
+python ./examples/customized.py
+```
