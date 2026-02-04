@@ -1,0 +1,16 @@
+prov
+prov.zip
+provenance_log.json
+tmp.png
+__pycache__/
+
+build/
+dist/
+*.egg*
+cora
+cora.*
+custom_app_plugin/
+gh_context/
+yProv_client.py
+
+.DS_Store
