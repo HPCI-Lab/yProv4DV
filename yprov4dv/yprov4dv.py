@@ -20,8 +20,17 @@ from . import file_utils
 class ProvTracker:
     def __init__(self):
         self.PREFIX = os.environ.get('YPROV4DV_PREFIX', "yProv4DA")
+        
         self.RUN_ID = 0
         self.EXPERIMENT_DIR = f"{os.environ.get('YPROV4DV_PROVENANCE_DIRECTORY', "prov")}_{self.RUN_ID}"
+        if os.path.exists(self.EXPERIMENT_DIR):
+            prev_exps = os.listdir(".") 
+            experiment_name = self.EXPERIMENT_DIR.removesuffix("_0")
+            matching_files = [int(exp.split("_")[-1].split(".")[0]) for exp in prev_exps if utils.experiment_matches(experiment_name, exp)]
+            self.RUN_ID = max(matching_files)+1  if len(matching_files) > 0 else 0
+            self.EXPERIMENT_DIR = f"{experiment_name}_{self.RUN_ID}"
+        os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
+
         self.INPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "inputs")
         self.SRC_DIR = os.path.join(self.EXPERIMENT_DIR, "src")
         self.OUTPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "outputs")
@@ -96,14 +105,6 @@ class ProvTracker:
             log_output(m)
 
         activity = self.doc.activity(f'{self.PREFIX}:{self.RUN_NAME}', time.ctime(self.start_time), time.ctime())
-
-        if os.path.exists(self.EXPERIMENT_DIR):
-            prev_exps = os.listdir(".") 
-            experiment_name = self.EXPERIMENT_DIR.removesuffix("_0")
-            matching_files = [int(exp.split("_")[-1].split(".")[0]) for exp in prev_exps if utils.experiment_matches(experiment_name, exp)]
-            self.RUN_ID = max(matching_files)+1  if len(matching_files) > 0 else 0
-            self.EXPERIMENT_DIR = f"{experiment_name}_{self.RUN_ID}"
-        os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
 
         if not os.path.exists(self.INPUTS_DIR):
             os.makedirs(self.INPUTS_DIR, exist_ok=True)
