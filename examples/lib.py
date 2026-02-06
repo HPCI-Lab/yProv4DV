@@ -1,3 +1,3 @@
 
 def elaborate(ls): 
-    return [i +10 for i in ls]
+    return [l + 42 for l in ls.tolist()]
