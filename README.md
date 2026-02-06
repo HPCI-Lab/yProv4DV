@@ -1,16 +1,30 @@
 
-<table align="center">
-  <tr>
-    <td><img src="./assets/HPCI-Lab.png" alt="HPCI Lab Logo" width="100"></td>
-    <td><h1>yProv4DA</h1></td>
-  </tr>
-</table>
+<div align="center">
+  <a href="https://github.com/HPCI-Lab">
+    <img src="./assets/HPCI-Lab.png" alt="HPCI Lab Logo" width="80" height="80">
+  </a>
+
+  <h3 align="center">yProv4DA</h3>
+
+  <p align="center">
+    A python utility for automatically packaging code, inputs and outputs of data visualization scripts. 
+    <br />
+    <a href="https://github.com/HPCI-Lab/yProv4DV"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/HPCI-Lab/yProv4DV/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    &middot;
+    <a href="https://github.com/HPCI-Lab/yProv4DV/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+</div>
+
+<br />
 
 [![Contributors](https://img.shields.io/github/contributors/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/network/members)
 [![Stars](https://img.shields.io/github/stars/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/stargazers)
 [![Issues](https://img.shields.io/github/issues/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/issues)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![GPLv3 License](https://img.shields.io/github/licence/HPCI-Lab/yProv4DV?style=for-the-badge)](https://opensource.org/licenses/)
 
 # yProv4DV
 
