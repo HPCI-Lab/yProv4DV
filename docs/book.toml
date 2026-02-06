@@ -3,7 +3,7 @@ authors = ["Gabriele Padovani"]
 language = "en"
 multilingual = false
 src = "src"
-title = "y2Graph Documentation"
+title = "yProv4DV Documentation"
 
 [preprocessor]
 
