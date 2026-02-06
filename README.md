@@ -24,7 +24,7 @@
 [![Forks](https://img.shields.io/github/forks/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/network/members)
 [![Stars](https://img.shields.io/github/stars/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/stargazers)
 [![Issues](https://img.shields.io/github/issues/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/issues)
-[![GPLv3 License](https://img.shields.io/github/licence/HPCI-Lab/yProv4DV?style=for-the-badge)](https://opensource.org/licenses/)
+[![GPLv3 License](https://img.shields.io/badge/LICENCE-GPL3.0-green?style=for-the-badge)](https://opensource.org/licenses/)
 
 # yProv4DV
 
