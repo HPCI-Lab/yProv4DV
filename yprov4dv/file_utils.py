@@ -47,7 +47,7 @@ def _get_source_files():
             is_in_project = abs_module_path.startswith(project_root)
             is_not_library = "site-packages" not in abs_module_path
             
-            if is_in_project and is_not_library:
+            if is_in_project and is_not_library and os.path.exists(abs_module_path):
                 rel_path = os.path.relpath(abs_module_path, project_root)
                 source_files.add(rel_path)
         

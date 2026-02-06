@@ -19,9 +19,9 @@ from . import file_utils
 
 class ProvTracker:
     def __init__(self):
-        self.PREFIX = os.environ.get('YPROV4DS_PREFIX', "yProv4DA")
+        self.PREFIX = os.environ.get('YPROV4DV_PREFIX', "yProv4DA")
         self.RUN_ID = 0
-        self.EXPERIMENT_DIR = f"{os.environ.get('YPROV4DS_PROVENANCE_DIRECTORY', "prov")}_{self.RUN_ID}"
+        self.EXPERIMENT_DIR = f"{os.environ.get('YPROV4DV_PROVENANCE_DIRECTORY', "prov")}_{self.RUN_ID}"
         self.INPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "inputs")
         self.SRC_DIR = os.path.join(self.EXPERIMENT_DIR, "src")
         self.OUTPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "outputs")
@@ -30,26 +30,26 @@ class ProvTracker:
         if not os.path.exists(self.EXPERIMENT_DIR):
             os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
 
-        self.RUN_NAME = os.environ.get('YPROV4DS_RUN_NAME', "experiment_run")
-        self.verbose = utils.parse_bool(os.environ.get('YPROV4DS_VERBOSE', "False"))
-        self.create_json = utils.parse_bool(os.environ.get('YPROV4DS_CREATE_JSON_FILE', "False"))
-        self.create_graph = utils.parse_bool(os.environ.get('YPROV4DS_CREATE_DOT_FILE', "False"))
+        self.RUN_NAME = os.environ.get('YPROV4DV_RUN_NAME', "experiment_run")
+        self.verbose = utils.parse_bool(os.environ.get('YPROV4DV_VERBOSE', "False"))
+        self.create_json = utils.parse_bool(os.environ.get('YPROV4DV_CREATE_JSON_FILE', "False"))
+        self.create_graph = utils.parse_bool(os.environ.get('YPROV4DV_CREATE_DOT_FILE', "False"))
         if self.create_graph and not self.create_json: 
             self.create_json = True
             if self.verbose: 
-                warnings.warn("[ProvTracker] YPROV4DS_CREATE_JSON_FILE cannot be False when requesting YPROV4DS_CREATE_DOT_FILE, turning it to True")
-        self.create_svg = utils.parse_bool(os.environ.get('YPROV4DS_CREATE_SVG_FILE', "False"))
+                warnings.warn("[ProvTracker] YPROV4DV_CREATE_JSON_FILE cannot be False when requesting YPROV4DV_CREATE_DOT_FILE, turning it to True")
+        self.create_svg = utils.parse_bool(os.environ.get('YPROV4DV_CREATE_SVG_FILE', "False"))
         if self.create_svg and not (self.create_json and self.create_graph): 
             self.create_json, self.create_graph = True, True
             if self.verbose: 
-                warnings.warn("[ProvTracker] YPROV4DS_CREATE_JSON_FILE and YPROV4DS_CREATE_DOT_FILE cannot be False when requesting YPROV4DS_CREATE_SVG_FILE, turning them to True")
+                warnings.warn("[ProvTracker] YPROV4DV_CREATE_JSON_FILE and YPROV4DV_CREATE_DOT_FILE cannot be False when requesting YPROV4DV_CREATE_SVG_FILE, turning them to True")
 
-        self.crate_ro_crate = utils.parse_bool(os.environ.get('YPROV4DS_CREATE_RO_CRATE', "True"))
+        self.crate_ro_crate = utils.parse_bool(os.environ.get('YPROV4DV_CREATE_RO_CRATE', "True"))
 
         self.accessed_files = {}
 
         self.doc = ProvDocument()
-        self.doc.set_default_namespace(os.environ.get('YPROV4DS_DEFAULT_NAMESPACE', 'http://example.org/'))
+        self.doc.set_default_namespace(os.environ.get('YPROV4DV_DEFAULT_NAMESPACE', 'http://example.org/'))
         self.doc.add_namespace(self.PREFIX, self.PREFIX)
         self.start_time = time.time()
 

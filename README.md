@@ -53,15 +53,15 @@ This execution will create:
 To keep the number of yprov4dv calls to a minimum, the customization of the library behaviour can be changed using environment variables. 
 All possible fields are listed below: 
 
-- `YPROV4DS_PROVENANCE_DIRECTORY`: (str) changes where the inputs, outputs and code directory are stored; 
-- `YPROV4DS_PREFIX`: (str) changes the prefix given to fields in the provenance document; 
-- `YPROV4DS_RUN_NAME`: (str) changes the run name inside the provenance file; 
-- `YPROV4DS_CREATE_JSON_FILE`: (`True` or `False`) whether the json file is created or not; 
-- `YPROV4DS_CREATE_DOT_FILE`: (`True` or `False`) whether the dot file is created or not, cannot be `True` if `YPROV4DS_CREATE_JSON_FILE` is `False`; 
-- `YPROV4DS_CREATE_SVG_FILE`: (`True` or `False`) whether the svg file is created or not, cannot be `True` if `YPROV4DS_CREATE_JSON_FILE` or `YPROV4DS_CREATE_DOT_FILE` are `False`; 
-- `YPROV4DS_CREATE_RO_CRATE`: (`True` or `False`) whether the ro-crate zip is created or not; 
-- `YPROV4DS_DEFAULT_NAMESPACE`: (str) changes the default namespace inside the provenance file
-- `YPROV4DS_VERBOSE`: (`True` or `False`), 
+- `YPROV4DV_PROVENANCE_DIRECTORY`: (str) changes where the inputs, outputs and code directory are stored; 
+- `YPROV4DV_PREFIX`: (str) changes the prefix given to fields in the provenance document; 
+- `YPROV4DV_RUN_NAME`: (str) changes the run name inside the provenance file; 
+- `YPROV4DV_CREATE_JSON_FILE`: (`True` or `False`) whether the json file is created or not; 
+- `YPROV4DV_CREATE_DOT_FILE`: (`True` or `False`) whether the dot file is created or not, cannot be `True` if `YPROV4DV_CREATE_JSON_FILE` is `False`; 
+- `YPROV4DV_CREATE_SVG_FILE`: (`True` or `False`) whether the svg file is created or not, cannot be `True` if `YPROV4DV_CREATE_JSON_FILE` or `YPROV4DV_CREATE_DOT_FILE` are `False`; 
+- `YPROV4DV_CREATE_RO_CRATE`: (`True` or `False`) whether the ro-crate zip is created or not; 
+- `YPROV4DV_DEFAULT_NAMESPACE`: (str) changes the default namespace inside the provenance file
+- `YPROV4DV_VERBOSE`: (`True` or `False`), 
 
 For an example, run: 
 

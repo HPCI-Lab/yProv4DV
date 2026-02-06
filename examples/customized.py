@@ -1,10 +1,10 @@
 # Call these before importing the yprov4dv library
 import os
-os.environ["YPROV4DS_PROVENANCE_DIRECTORY"] = "newdir"
-os.environ["YPROV4DS_CREATE_JSON_FILE"] = "True"
-os.environ["YPROV4DS_CREATE_DOT_FILE"] = "False"
-os.environ["YPROV4DS_CREATE_SVG_FILE"] = "True"
-os.environ["YPROV4DS_VERBOSE"] = "True"
+os.environ["YPROV4DV_PROVENANCE_DIRECTORY"] = "newdir"
+os.environ["YPROV4DV_CREATE_JSON_FILE"] = "True"
+os.environ["YPROV4DV_CREATE_DOT_FILE"] = "False"
+os.environ["YPROV4DV_CREATE_SVG_FILE"] = "True"
+os.environ["YPROV4DV_VERBOSE"] = "True"
 
 import yprov4dv
 import pandas as pd
