@@ -1,0 +1,33 @@
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = [
+    "*"
+]
+
+[project]
+name = "yProv4DV"
+version = "0.0.1"
+authors = [
+  { name="Gabriele Padovani", email="gabriele.padovani@unitn.it" },
+]
+description = "yProv4DV (Data Visualization) is a python utility which allows for packaging of code, inputs and outputs of data visualization scripts. Once integrated, it will produce a zip file which includes all information necessary for reproducibility of the current script, including a copy of the files used."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = {file = "LICENSE"}
+dependencies = [
+    "prov", 
+    "rocrate", 
+    "pydot", 
+]
+
+[project.urls]
+Homepage = "https://github.com/HPCI-Lab/yProv4DV"
+Issues = "https://github.com/HPCI-Lab/yProv4DV/issues"

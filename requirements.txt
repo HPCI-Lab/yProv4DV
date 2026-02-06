@@ -1,3 +1,9 @@
 prov
 rocrate
 pydot
+numpy
+pandas
+geopandas
+xarray
+torch
+rasterio

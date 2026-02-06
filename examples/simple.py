@@ -2,7 +2,7 @@ import sys
 sys.path.append("./examples")
 sys.path.append(".")
 
-from yprov4dv import yprov4dv
+import yprov4dv
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -18,4 +18,4 @@ data.plot()
 plt.legend()
 plt.savefig("tmp.png")
 
-yprov4dv.log_output("tmp.png")
+# yprov4dv.log_output("tmp.png")

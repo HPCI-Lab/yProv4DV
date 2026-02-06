@@ -4,11 +4,12 @@ sys.path.append(".")
 
 import os
 os.environ["YPROV4DS_PROVENANCE_DIRECTORY"] = "newdir"
-os.environ["YPROV4DS_CREATE_JSON_FILE"] = "False"
+os.environ["YPROV4DS_CREATE_JSON_FILE"] = "True"
 os.environ["YPROV4DS_CREATE_DOT_FILE"] = "False"
-os.environ["YPROV4DS_CREATE_SVG_FILE"] = "False"
+os.environ["YPROV4DS_CREATE_SVG_FILE"] = "True"
+os.environ["YPROV4DS_VERBOSE"] = "True"
 
-from yprov4dv import yprov4dv
+import yprov4dv
 import pandas as pd
 import matplotlib.pyplot as plt
 

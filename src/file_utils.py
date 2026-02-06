@@ -3,6 +3,12 @@ import subprocess
 import os
 import sys
 from rocrate.rocrate import ROCrate
+from pathlib import Path
+
+def snapshot(root: Path):
+    if isinstance(root, str): 
+        root = Path(root)
+    return {p.resolve(): p.stat().st_mtime for p in root.rglob("*") if p.is_file()}
 
 def _get_git_revision_hash() -> str:
     return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
