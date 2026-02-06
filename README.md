@@ -9,7 +9,7 @@
   <p align="center">
     A python utility for automatically packaging code, inputs and outputs of data visualization scripts. 
     <br />
-    <a href="https://github.com/HPCI-Lab/yProv4DV"><strong>Explore the docs »</strong></a>
+    <a href="https://hpci-lab.github.io/yProv4DV/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/HPCI-Lab/yProv4DV/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
