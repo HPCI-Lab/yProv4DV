@@ -5,12 +5,13 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = [
-    "*"
+    "src*", 
+    "yprov4dv*", 
 ]
 
 [project]
-name = "yProv4DV"
-version = "1.0.0"
+name = "yprov4dv"
+version = "1.0.1"
 authors = [
   { name="Gabriele Padovani", email="gabriele.padovani@unitn.it" },
 ]
@@ -26,6 +27,12 @@ dependencies = [
     "prov", 
     "rocrate", 
     "pydot", 
+    "numpy", 
+    "pandas", 
+    "geopandas", 
+    "xarray", 
+    "torch", 
+    "rasterio", 
 ]
 
 [project.urls]
