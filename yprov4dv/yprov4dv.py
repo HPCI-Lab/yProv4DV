@@ -14,8 +14,8 @@ import rasterio as rio
 import numpy as np
 import torch
 
-from src import utils
-from src import file_utils
+from . import utils
+from . import file_utils
 
 class ProvTracker:
     def __init__(self):
