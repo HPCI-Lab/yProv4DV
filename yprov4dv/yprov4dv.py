@@ -27,9 +27,6 @@ class ProvTracker:
         self.OUTPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "outputs")
         self.PROJECT_ROOT = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-        if not os.path.exists(self.EXPERIMENT_DIR):
-            os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
-
         self.RUN_NAME = os.environ.get('YPROV4DV_RUN_NAME', "experiment_run")
         self.verbose = utils.parse_bool(os.environ.get('YPROV4DV_VERBOSE', "False"))
         self.create_json = utils.parse_bool(os.environ.get('YPROV4DV_CREATE_JSON_FILE', "False"))
