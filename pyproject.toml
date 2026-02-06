@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = [
     "src*", 
-    "yprov4dv*", 
+    "yprov4dv.py", 
 ]
 
 [project]
@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-license = {file = "LICENSE"}
+license = "GPL-3.0-or-later"
 dependencies = [
     "prov", 
     "rocrate", 
