@@ -6,10 +6,10 @@
   </tr>
 </table>
 
-[![Contributors](https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/graphs/contributors)
-[![Forks](https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/network/members)
-[![Stars](https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/stargazers)
-[![Issues](https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/issues)
+[![Contributors](https://img.shields.io/github/contributors/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/graphs/contributors)
+[![Forks](https://img.shields.io/github/forks/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/network/members)
+[![Stars](https://img.shields.io/github/stars/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/stargazers)
+[![Issues](https://img.shields.io/github/issues/HPCI-Lab/yProv4DV?style=for-the-badge)](https://github.com/HPCI-Lab/yProv4DV/issues)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 
 # yProv4DV
