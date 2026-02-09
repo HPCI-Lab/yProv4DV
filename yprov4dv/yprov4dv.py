@@ -60,6 +60,7 @@ class ProvTracker:
             create_rocrate : bool = True,
             save_input_files_full : bool = True, 
             save_input_files_subset : bool = False,
+            skip_files_larger_than : int = 50,
             verbose : bool = False, 
         ): 
 
@@ -109,6 +110,7 @@ class ProvTracker:
                 print("[ProvTracker] YPROV4DV_CREATE_JSON_FILE and YPROV4DV_CREATE_DOT_FILE cannot be False when requesting YPROV4DV_CREATE_SVG_FILE, turning them to True")
         self.crate_ro_crate = create_rocrate
 
+        self.skip_files_larger_than = skip_files_larger_than
         self.save_input_files_full = save_input_files_full
         if self.save_input_files_full: 
             self._track_read_calls()
@@ -221,6 +223,11 @@ class ProvTracker:
         
         for file, perm in self.accessed_files.items(): 
             if  "r" in perm: 
+                size = os.path.getsize(file) // (1024**2)
+                if size > self.skip_files_larger_than: 
+                    if self.verbose: 
+                        print(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
+                    continue
                 file_dst = self.copy_file_to(file, self.INPUTS_DIR)
                 entity = self.doc.entity(f'{self.PREFIX}:{file_dst}')
                 self.doc.used(activity, entity)
@@ -265,10 +272,11 @@ def start_run(
     create_rocrate : bool = True,
     save_input_files_full : bool = True, 
     save_input_files_subset : bool = True,
+    skip_files_larger_than : int = 50, 
     verbose : bool = False, 
-    ): 
+): 
     global _instance
-    _instance = ProvTracker(run_name, provenance_directory, prefix, default_namespace, create_json_file, create_dot_file, create_svg_file, create_rocrate, save_input_files_full, save_input_files_subset, verbose)
+    _instance = ProvTracker(run_name, provenance_directory, prefix, default_namespace, create_json_file, create_dot_file, create_svg_file, create_rocrate, save_input_files_full, save_input_files_subset, skip_files_larger_than, verbose)
     atexit.register(_instance.finalize)
 
 def log_input(path): 
