@@ -1,5 +1,3 @@
-import sys
-sys.path.append(".")
 import yprov4dv
 yprov4dv.start_run()
 import pandas as pd
