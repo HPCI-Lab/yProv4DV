@@ -1,12 +1,5 @@
-# Call these before importing the yprov4dv library
-import os
-os.environ["YPROV4DV_PROVENANCE_DIRECTORY"] = "newdir"
-os.environ["YPROV4DV_CREATE_JSON_FILE"] = "True"
-os.environ["YPROV4DV_CREATE_DOT_FILE"] = "False"
-os.environ["YPROV4DV_CREATE_SVG_FILE"] = "True"
-os.environ["YPROV4DV_VERBOSE"] = "True"
-
 import yprov4dv
+yprov4dv.start_run(create_rocrate=False, create_json_file=True, create_dot_file=True, create_svg_file=True, skip_files_larger_than=23//(1024**2))
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -17,7 +10,7 @@ data = pd.read_csv("./assets/results.csv")
 
 data["second_series"] = elaborate(data["points"])
 
-data.plot()
+data.plot() # also supports data.plot.bar() etc...
 plt.legend()
 plt.savefig("tmp.png")
 yprov4dv.log_output("tmp.png")

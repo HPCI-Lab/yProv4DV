@@ -6,18 +6,9 @@ yProv4DV (Data Visualization) is a python utility which allows for packaging of 
 
 ### Features
 
-To keep the number of yprov4dv calls to a minimum, the customization of the library behaviour can be changed using environment variables. 
-All possible fields are listed below: 
-
-- `YPROV4DV_PROVENANCE_DIRECTORY`: (str) changes where the inputs, outputs and code directory are stored; 
-- `YPROV4DV_PREFIX`: (str) changes the prefix given to fields in the provenance document; 
-- `YPROV4DV_RUN_NAME`: (str) changes the run name inside the provenance file; 
-- `YPROV4DV_CREATE_JSON_FILE`: (`True` or `False`) whether the json file is created or not; 
-- `YPROV4DV_CREATE_DOT_FILE`: (`True` or `False`) whether the dot file is created or not, cannot be `True` if `YPROV4DV_CREATE_JSON_FILE` is `False`; 
-- `YPROV4DV_CREATE_SVG_FILE`: (`True` or `False`) whether the svg file is created or not, cannot be `True` if `YPROV4DV_CREATE_JSON_FILE` or `YPROV4DV_CREATE_DOT_FILE` are `False`; 
-- `YPROV4DV_CREATE_RO_CRATE`: (`True` or `False`) whether the ro-crate zip is created or not; 
-- `YPROV4DV_DEFAULT_NAMESPACE`: (str) changes the default namespace inside the provenance file
-- `YPROV4DV_VERBOSE`: (`True` or `False`), 
+The library allows for the automatic collection of inputs, outputs and source code used during the programs execution. 
+If a file is too large, the user can specify to save only the information necessary to the creation of the chart. 
+Additionally, a provenance graph of the program can also be created, along with its visual representation and the ro-create package for the script's reproducibility. 
 
 For an example, run: 
 

@@ -29,8 +29,6 @@ All the parameters for the `start_run` function are listed below:
 - `skip_files_larger_than`: (int) In Mb, files larger than the threshold will not be copied;
 - `verbose`: (`True` or `False`), 
 
-
-
 # Current Compatibilities
 
 Currently, the yProv4DV library is able to track input files which are opened by the following libraries: 
