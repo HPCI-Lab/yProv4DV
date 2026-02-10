@@ -219,6 +219,7 @@ class ProvTracker:
         reqs = file_utils._requirements_lookup(".")
         if reqs: 
             activity.add_attributes({f"{self.PREFIX}:requirements": reqs})
+            log_input(reqs)
         activity.add_attributes({f"{self.PREFIX}:execution_command": " ".join(shlex.quote(c) for c in [sys.executable] + sys.argv)})
         
         for file, perm in self.accessed_files.items(): 
@@ -271,7 +272,7 @@ def start_run(
     create_svg_file : bool = False, 
     create_rocrate : bool = True,
     save_input_files_full : bool = True, 
-    save_input_files_subset : bool = True,
+    save_input_files_subset : bool = False,
     skip_files_larger_than : int = 50, 
     verbose : bool = False, 
 ): 

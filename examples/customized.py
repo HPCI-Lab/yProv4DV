@@ -1,16 +1,48 @@
 import yprov4dv
-yprov4dv.start_run(create_rocrate=False, create_json_file=True, create_dot_file=True, create_svg_file=True, skip_files_larger_than=23//(1024**2))
+# Initialize tracking
+yprov4dv.start_run(
+    create_rocrate=False, 
+    create_json_file=True, 
+    create_dot_file=True, 
+    create_svg_file=True, 
+    save_input_files_subset=True, # Take only the data plotted
+    skip_files_larger_than=1 # Larger than 1 Mb
+)
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from lib import elaborate
+data_path = "assets/large.csv"
+yprov4dv.log_input(data_path) # Logs the web source
+data = pd.read_csv(data_path)
 
-yprov4dv.log_input("./assets/results.csv")
-data = pd.read_csv("./assets/results.csv")
+# 2. Pre-processing (Make it look nice)
+data['time'] = pd.to_datetime(data['time'])
+data = data.set_index('time')
 
-data["second_series"] = elaborate(data["points"])
+# We only want the last 365 days for a "nicer" plot
+recent_data = data.tail(365).copy()
 
-data.plot() # also supports data.plot.bar() etc...
-plt.legend()
-plt.savefig("tmp.png")
-yprov4dv.log_output("tmp.png")
+# 3. Use your elaborate function (Simulating a transformation)
+# Let's say we calculate a 30-day moving average
+recent_data["Price_Smoothing"] = recent_data["PriceUSD"].rolling(window=30).mean()
+
+# 4. Plotting (This triggers your Monkeypatch)
+# This will capture ONLY the last 365 days of data into your PROV log
+ax = recent_data[["PriceUSD", "Price_Smoothing"]].plot(
+    figsize=(10, 6), 
+    title="Bitcoin Price Trend (Last Year)",
+    color=['#1f77b4', '#ff7f0e'],
+    linewidth=2
+)
+
+plt.ylabel("Price (USD)")
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.legend(["Daily Price", "30-Day Average"])
+
+# 5. Save and Log Output
+output_path = "btc_analysis.png"
+plt.savefig(output_path, dpi=300)
+yprov4dv.log_output(output_path)
+
+print(f"Analysis complete. Provenance saved. Plot saved to {output_path}")

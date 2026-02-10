@@ -1,5 +1,5 @@
 import yprov4dv
-yprov4dv.start_run()
+yprov4dv.start_run(create_json_file=True, create_dot_file=True, create_svg_file=True)
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -15,7 +15,7 @@ data["second_series"] = elaborate(data["points"])
 
 sns.lineplot(data,x="points", y="second_series")
 plt.legend()
-plt.savefig("tmp2.png")
+plt.savefig("example.png")
 
 # Not necessary in this case
-yprov4dv.log_output("tmp.png")
+yprov4dv.log_output("example.png")
