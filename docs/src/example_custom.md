@@ -9,29 +9,48 @@
 
 
 ```python
-# Call these before importing the yprov4dv library
-import os
-os.environ["YPROV4DV_PROVENANCE_DIRECTORY"] = "newdir"
-os.environ["YPROV4DV_CREATE_JSON_FILE"] = "True"
-os.environ["YPROV4DV_CREATE_DOT_FILE"] = "False"
-os.environ["YPROV4DV_CREATE_SVG_FILE"] = "True"
-os.environ["YPROV4DV_VERBOSE"] = "True"
-
 import yprov4dv
+yprov4dv.start_run(
+    create_rocrate=False, 
+    create_json_file=True, 
+    create_dot_file=True, 
+    create_svg_file=True, 
+    save_input_files_subset=True, # Take only the data plotted
+    skip_files_larger_than=1 # Larger than 1 Mb
+)
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from lib import elaborate
+data_path = "assets/large.csv"
+# This log is not necessary, the file will be tracked anyways
+yprov4dv.log_input(data_path) 
+data = pd.read_csv(data_path)
 
-yprov4dv.log_input("./assets/results.csv")
-data = pd.read_csv("./assets/results.csv")
+data['time'] = pd.to_datetime(data['time'])
+data = data.set_index('time')
 
-data["second_series"] = elaborate(data["points"])
+recent_data = data.tail(365).copy()
+recent_data["Price_Smoothing"] = recent_data["PriceUSD"].rolling(window=30).mean()
 
-data.plot()
-plt.legend()
-plt.savefig("tmp.png")
-yprov4dv.log_output("tmp.png")
+# This will capture ONLY the last 365 days of data into your PROV log
+# (both "PriceUSD", "Price_Smoothing")
+ax = recent_data[["PriceUSD", "Price_Smoothing"]].plot(
+    figsize=(10, 6), 
+    title="Bitcoin Price Trend (Last Year)",
+    color=['#1f77b4', '#ff7f0e'],
+    linewidth=2
+)
+
+plt.ylabel("Price (USD)")
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.legend(["Daily Price", "30-Day Average"])
+
+# 5. Save and Log Output
+output_path = "btc_analysis.png"
+plt.savefig(output_path, dpi=300)
+# Not necessary, the file will be tracked anyways
+yprov4dv.log_output(output_path)
 ```
 
 
