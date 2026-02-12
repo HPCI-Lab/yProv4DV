@@ -4,7 +4,7 @@
     <img src="./assets/HPCI-Lab.png" alt="HPCI Lab Logo" width="100" height="100">
   </a>
 
-  <h3 align="center">yProv4DA</h3>
+  <h3 align="center">yProv4DV</h3>
 
   <p align="center">
     A python utility for automatically packaging code, inputs and outputs of data visualization scripts. 
