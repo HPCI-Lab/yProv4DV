@@ -28,12 +28,16 @@ dependencies = [
     "pydot", 
     "numpy", 
     "pandas", 
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+all = [
     "geopandas", 
     "xarray", 
     "torch", 
     "rasterio", 
-    "matplotlib",
-    "seaborn", 
+    "seaborn"
 ]
 
 [project.urls]
