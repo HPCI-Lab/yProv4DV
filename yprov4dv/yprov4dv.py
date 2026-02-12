@@ -7,29 +7,41 @@ from pathlib import Path
 import shutil
 import shlex
 import pandas as pd
-import xarray as xr
-import geopandas as gpd
-import rasterio as rio
 import numpy as np
-import torch
 import matplotlib.pyplot as plt
-import seaborn as sns
+import builtins
 
 from . import utils
 from . import file_utils
 
 class ProvTracker:
     def _track_read_calls(self): 
+        self._orig_open = builtins.open
+        builtins.open = self._track_read_path(builtins.open)
         pd.read_csv = self._track_read_path(pd.read_csv)
         pd.read_parquet = self._track_read_path(pd.read_parquet)
         pd.read_excel = self._track_read_path(pd.read_excel)
         pd.read_json = self._track_read_path(pd.read_json)
-        xr.open_dataset = self._track_read_path(xr.open_dataset)
-        xr.open_mfdataset = self._track_read_path(xr.open_mfdataset)
-        gpd.read_file = self._track_read_path(gpd.read_file)
-        rio.open = self._track_read_path(rio.open)
         np.load = self._track_read_path(np.load)
-        torch.load = self._track_read_path(torch.load)
+
+        try:
+            import xarray as xr
+            xr.open_dataset = self._track_read_path(xr.open_dataset)
+            xr.open_mfdataset = self._track_read_path(xr.open_mfdataset)
+        except: pass
+        try:
+            import geopandas as gpd
+            gpd.read_file = self._track_read_path(gpd.read_file)
+        except: pass
+        try:
+            import rasterio as rio
+            rio.open = self._track_read_path(rio.open)
+        except: pass
+        try:
+            import torch
+            torch.load = self._track_read_path(torch.load)
+        except: pass
+
 
     def _track_plot_calls(self): 
         self._orig_plot = plt.plot
@@ -43,10 +55,13 @@ class ProvTracker:
             return tracker_instance._orig_pandas_call(accessor, *args, **kwargs)
         pd.plotting._core.PlotAccessor.__call__ = pandas_stub
 
-        sns_plots = ['scatterplot', 'lineplot', 'barplot', 'histplot', 'boxplot']
-        for func_name in sns_plots:
-            orig_func = getattr(sns, func_name)
-            setattr(sns, func_name, self._make_sns_wrapper(orig_func))
+        try: 
+            import seaborn as sns
+            sns_plots = ['scatterplot', 'lineplot', 'barplot', 'histplot', 'boxplot']
+            for func_name in sns_plots:
+                orig_func = getattr(sns, func_name)
+                setattr(sns, func_name, self._make_sns_wrapper(orig_func))
+        except: pass
         
     def __init__(
             self, 
@@ -173,7 +188,6 @@ class ProvTracker:
         if self.verbose: 
             print(f"[ProvTracker] Tracking matplotlib plot...")
 
-        print(len(args))
         if len(args) >= 2:
             x_data = args[0]            
             if isinstance(x_data, (pd.Series, np.ndarray)):
@@ -192,10 +206,14 @@ class ProvTracker:
     def copy_file_to(self, file, _dir): 
         if self.verbose: 
             print(f"[ProvTracker] Copy File {file} to {_dir}...")
-        filename = Path(file).name
+        filename = Path(file).resolve().relative_to(os.getcwd())
         file_dst = os.path.join(_dir, filename)
         if file != Path(file_dst).resolve(): 
-            shutil.copyfile(file, file_dst)
+            try:
+                shutil.copy(file, file_dst)
+            except IOError as io_err:
+                os.makedirs(os.path.dirname(file_dst))
+                shutil.copy(file, file_dst)
         return file_dst
 
     def finalize(self):
@@ -222,6 +240,7 @@ class ProvTracker:
             log_input(reqs)
         activity.add_attributes({f"{self.PREFIX}:execution_command": " ".join(shlex.quote(c) for c in [sys.executable] + sys.argv)})
         
+        builtins.open = self._orig_open
         for file, perm in self.accessed_files.items(): 
             if  "r" in perm: 
                 size = os.path.getsize(file) // (1024**2)
@@ -289,9 +308,16 @@ def log_output(path):
 def log_file(path, mode): 
     global _instance
     path = Path(path)
-    for p in _instance.accessed_files.keys(): 
+    added = False
+    for p, m in _instance.accessed_files.items(): 
         if p.name in path.name or path.name in p.name: 
-            if utils.paths_are_same(p, path): 
+            paths_are_same = utils.paths_are_same(p, path)
+            if paths_are_same and m != mode: 
+                _instance.accessed_files[path] = "w"
+                added = True
+                break
+            elif paths_are_same and m == mode: 
                 print(f"[ProvTracker] Attempt to log {path} when {p} has already been logged with mode \"{mode}\"")
                 return
-    _instance.accessed_files[path] = mode
+    if not added: 
+        _instance.accessed_files[path] = mode
