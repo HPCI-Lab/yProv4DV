@@ -42,7 +42,6 @@ class ProvTracker:
             torch.load = self._track_read_path(torch.load)
         except: pass
 
-
     def _track_plot_calls(self): 
         self._orig_plot = plt.plot
         plt.plot = self._wrapped_plt_plot
@@ -80,6 +79,7 @@ class ProvTracker:
         ): 
 
         self.accessed_files = {}
+        self.ignored_files = set()
         self.plot_count = 0
 
         self.PREFIX = prefix
@@ -147,7 +147,6 @@ class ProvTracker:
                 pass  # file-like objects, buffers, URLs, etc.
             return func(path, *a, **kw)
         return wrapper
-    
     
     def _make_sns_wrapper(self, orig_func):
         def wrapper(*args, **kwargs):
@@ -305,19 +304,32 @@ def log_input(path):
 def log_output(path): 
     log_file(path, "w")
 
+def untrack_file(path): 
+    global _instance
+    path = Path(path).absolute()
+    if path in _instance.ignored_files:
+        if _instance.verbose: 
+            print(f"[ProvTracker] Attempt to untrack {path} when {p} is already in ignored files")
+        return
+    _instance.ignored_files.add(path)
+
 def log_file(path, mode): 
     global _instance
-    path = Path(path)
-    added = False
-    for p, m in _instance.accessed_files.items(): 
-        if p.name in path.name or path.name in p.name: 
-            paths_are_same = utils.paths_are_same(p, path)
-            if paths_are_same and m != mode: 
-                _instance.accessed_files[path] = "w"
-                added = True
-                break
-            elif paths_are_same and m == mode: 
-                print(f"[ProvTracker] Attempt to log {path} when {p} has already been logged with mode \"{mode}\"")
-                return
-    if not added: 
+    path = Path(path).absolute()
+    if path in _instance.ignored_files: 
+        if _instance.verbose: 
+            print(f"[ProvTracker] Ignoring logging of {path} because it is in ignored_files list")
+        return
+
+    if path in _instance.accessed_files.keys(): 
+        already_in_mode = _instance.accessed_files[path]
+        if already_in_mode != mode: 
+            if _instance.verbose: 
+                print(f"[ProvTracker] Modified logging mode of {path} to \"w\"")
+            _instance.accessed_files[path] = "w"
+        else: 
+            if _instance.verbose: 
+                print(f"[ProvTracker] Attempt to log {path} when it has already been logged with mode \"{mode}\"")
+            return
+    else: 
         _instance.accessed_files[path] = mode
