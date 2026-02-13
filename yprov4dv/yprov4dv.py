@@ -1,6 +1,6 @@
 import atexit
 import os
-import time
+import datetime
 import sys
 from prov.model import ProvDocument
 from pathlib import Path
@@ -66,7 +66,6 @@ class ProvTracker:
             self, 
             run_name : str = "experiment_run", 
             provenance_directory : str = "prov", 
-            prefix : str = "yProv4DA", 
             default_namespace : str = "http://example.org/", 
             create_json_file : bool = False, 
             create_dot_file : bool = False, 
@@ -84,13 +83,16 @@ class ProvTracker:
 
         self.plot_count = 0
 
-        self.PREFIX = prefix
+        self.PREFIX = "yProv"
         self.RUN_ID = 0
         self.EXPERIMENT_DIR = f"{provenance_directory}_{self.RUN_ID}"
         
         self.doc = ProvDocument()
         self.doc.set_default_namespace(default_namespace)
-        self.doc.add_namespace(self.PREFIX, self.PREFIX)
+        self.doc.add_namespace(self.PREFIX, "https://to/onthology")
+        self.doc.add_namespace("prov", "http://www.w3.org/ns/prov#")
+        self.doc.add_namespace("xsd",'http://www.w3.org/2000/10/XMLSchema#')
+        self.doc.add_namespace("dcterms", 'http://purl.org/dc/terms/')
 
         if os.path.exists(self.EXPERIMENT_DIR):
             prev_exps = os.listdir(".") 
@@ -135,7 +137,7 @@ class ProvTracker:
         if self.save_input_files_subset: 
             self._track_plot_calls()
 
-        self.start_time = time.time()
+        self.start_time = datetime.datetime.now()
 
         if self.verbose: 
             print("[ProvTracker] Monitoring started...")
@@ -229,7 +231,7 @@ class ProvTracker:
         for c in created | modified: 
             log_output(c)
 
-        activity = self.doc.activity(f'{self.PREFIX}:{self.RUN_NAME}', time.ctime(self.start_time), time.ctime())
+        activity = self.doc.activity(self.RUN_NAME, self.start_time.isoformat(), datetime.datetime.now().isoformat())
 
         repo = file_utils._get_git_remote_url()
         if repo is not None:
@@ -250,17 +252,17 @@ class ProvTracker:
                         print(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
                     continue
                 file_dst = self.copy_file_to(file, self.INPUTS_DIR)
-                entity = self.doc.entity(f'{self.PREFIX}:{file_dst}')
+                entity = self.doc.entity(file_dst)
                 self.doc.used(activity, entity)
             elif "w" in perm: 
                 file_dst = self.copy_file_to(file, self.OUTPUTS_DIR)
-                entity = self.doc.entity(f'{self.PREFIX}:{file_dst}')
+                entity = self.doc.entity(file_dst)
                 self.doc.wasGeneratedBy(entity, activity)
             
         file_sources = file_utils._get_source_files()
         for file in file_sources: 
             file_dst = self.copy_file_to(file, self.SRC_DIR)
-            entity = self.doc.entity(f'{self.PREFIX}:{file_dst}')
+            entity = self.doc.entity(file_dst)
             self.doc.used(activity, entity)
 
         output_file = f'{self.RUN_NAME}.json'
@@ -285,7 +287,6 @@ _instance = None
 def start_run(
     run_name : str = "experiment_run", 
     provenance_directory : str = "prov", 
-    prefix : str = "yProv4DA", 
     default_namespace : str = "http://example.org/", 
     create_json_file : bool = False, 
     create_dot_file : bool = False, 
@@ -297,7 +298,7 @@ def start_run(
     verbose : bool = False, 
 ): 
     global _instance
-    _instance = ProvTracker(run_name, provenance_directory, prefix, default_namespace, create_json_file, create_dot_file, create_svg_file, create_rocrate, save_input_files_full, save_input_files_subset, skip_files_larger_than, verbose)
+    _instance = ProvTracker(run_name, provenance_directory, default_namespace, create_json_file, create_dot_file, create_svg_file, create_rocrate, save_input_files_full, save_input_files_subset, skip_files_larger_than, verbose)
     atexit.register(_instance.finalize)
 
 def log_input(path): 
