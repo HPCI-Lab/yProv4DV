@@ -19,3 +19,6 @@ gh_context/
 *.csv
 *.svg
 *.png
+
+prov_*
+*.zip
