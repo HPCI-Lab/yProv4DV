@@ -9,25 +9,9 @@ from lib import elaborate
 import sys
 sys.path.append(".")
 import yprov4dv
-yprov4dv.start_run()
+yprov4dv.start_run(verbose=False)
 
-def load_jsonl(filepath):
-    """Load JSONL file and return DataFrame."""
-    rows = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    rows.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    
-    if not rows:
-        raise ValueError(f"No valid records found in {filepath}")
-    
-    return pd.DataFrame(rows)
-
+# yprov4dv.untrack_file('./assets/large.csv')
 df = pd.read_csv('./assets/large.csv')
 
 # load_jsonl("pipeline_metrics.json")
@@ -44,6 +28,7 @@ df.plot(
 )
 
 plt.savefig("swx_example.png")
+plt.savefig("../bench/swx_example.png")
 
 # Not necessary, it will be tracked anyways
 # yprov4dv.log_output('swx_example.png')

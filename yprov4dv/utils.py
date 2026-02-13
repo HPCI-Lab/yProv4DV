@@ -6,7 +6,6 @@ def experiment_matches(experiment_name : str,exp_folder : str) -> bool:
     exp_folder = "_".join(exp_folder.split("_")[:-1])
     return experiment_name == exp_folder
 
-
 def save_prov_file(
         doc : prov.ProvDocument,
         experiment_dir : str, 
@@ -48,15 +47,6 @@ def save_prov_file(
         svg_filename = os.path.basename(prov_file).replace(".json", ".svg")
         path_svg = os.path.join(experiment_dir, svg_filename)
         os.system(f"dot -Tsvg {path_dot} > {path_svg}")
-
-def parse_bool(s): 
-    return s == "True"
-
-def paths_are_same(path1, path2): 
-    if os.path.exists(path1) and os.path.exists(path2):
-        return os.path.samefile(path1, path2)
-    else: 
-        return False
 
 from prov.model import (
     ProvException,

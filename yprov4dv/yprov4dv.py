@@ -80,6 +80,8 @@ class ProvTracker:
 
         self.accessed_files = {}
         self.ignored_files = set()
+        self.start_snapshot = file_utils.snapshot(".")
+
         self.plot_count = 0
 
         self.PREFIX = prefix
@@ -134,7 +136,6 @@ class ProvTracker:
             self._track_plot_calls()
 
         self.start_time = time.time()
-        self.start_snapshot = file_utils.snapshot(".")
 
         if self.verbose: 
             print("[ProvTracker] Monitoring started...")
@@ -142,15 +143,13 @@ class ProvTracker:
     def _track_read_path(self, func):
         def wrapper(path, *a, **kw):
             try:
-                self.accessed_files[Path(path).resolve()] = "r"
-            except TypeError:
-                pass  # file-like objects, buffers, URLs, etc.
+                log_file(path, "r")
+            except TypeError: pass  # file-like objects, buffers, URLs, etc.
             return func(path, *a, **kw)
         return wrapper
     
     def _make_sns_wrapper(self, orig_func):
         def wrapper(*args, **kwargs):
-            # Seaborn usually takes data via the 'data' keyword argument
             data = kwargs.get('data')
             x = kwargs.get('x')
             y = kwargs.get('y')
@@ -178,7 +177,8 @@ class ProvTracker:
         if isinstance(x_data, (pd.DataFrame, pd.Series, np.ndarray)):
             xfilename = os.path.join(self.INPUTS_DIR, f"data_{self.plot_count}.csv")
             pd.DataFrame(x_data).to_csv(xfilename)
-            self.accessed_files[Path(xfilename).resolve()] = "r"
+            log_file(xfilename, "r")
+
 
         return self._orig_plot(*args, **kwargs)
 
@@ -192,40 +192,42 @@ class ProvTracker:
             if isinstance(x_data, (pd.Series, np.ndarray)):
                 xfilename = os.path.join(self.INPUTS_DIR, f"xdata_{self.plot_count}.csv")
                 pd.DataFrame(x_data).to_csv(xfilename)
-                self.accessed_files[Path(xfilename).resolve()] = "r"
+                log_file(xfilename, "r")
 
             y_data = args[1]
             if isinstance(y_data, (pd.Series, np.ndarray)):
                 yfilename = os.path.join(self.INPUTS_DIR, f"ydata_{self.plot_count}.csv")
                 pd.DataFrame(y_data).to_csv(yfilename)
-                self.accessed_files[Path(yfilename).resolve()] = "r"
+                log_file(yfilename, "r")
 
         return self._orig_plot(*args, **kwargs)
 
     def copy_file_to(self, file, _dir): 
+        try: 
+            filename = Path(file).resolve().relative_to(os.getcwd())
+        except ValueError: 
+            if self.verbose: 
+                print(f"[ProvTracker] Skipping copying file {file} to {_dir} because not in root dir")
+            return
         if self.verbose: 
             print(f"[ProvTracker] Copy File {file} to {_dir}...")
-        filename = Path(file).resolve().relative_to(os.getcwd())
+        
         file_dst = os.path.join(_dir, filename)
         if file != Path(file_dst).resolve(): 
-            try:
-                shutil.copy(file, file_dst)
-            except IOError as io_err:
-                os.makedirs(os.path.dirname(file_dst))
-                shutil.copy(file, file_dst)
+            os.makedirs(os.path.dirname(file_dst), exist_ok=True)
+            shutil.copy(file, file_dst)
         return file_dst
 
     def finalize(self):
         if self.verbose: 
             print("[ProvTracker] Script ending. Analyzing changes...")
 
-        end_snapshot = file_utils.snapshot(".")
+        pth = Path(".").absolute()
+        end_snapshot = file_utils.snapshot(pth)
         created = end_snapshot.keys() - self.start_snapshot.keys()
         modified = {p for p in self.start_snapshot.keys() & end_snapshot.keys() if self.start_snapshot[p] != end_snapshot[p]}
-        for c in created: 
+        for c in created | modified: 
             log_output(c)
-        for m in modified: 
-            log_output(m)
 
         activity = self.doc.activity(f'{self.PREFIX}:{self.RUN_NAME}', time.ctime(self.start_time), time.ctime())
 
@@ -316,7 +318,7 @@ def untrack_file(path):
 def log_file(path, mode): 
     global _instance
     path = Path(path).absolute()
-    if path in _instance.ignored_files: 
+    if Path(path) in _instance.ignored_files: 
         if _instance.verbose: 
             print(f"[ProvTracker] Ignoring logging of {path} because it is in ignored_files list")
         return
