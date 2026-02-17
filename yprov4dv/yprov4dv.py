@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import builtins
+import logging
 
 from . import utils
 from . import file_utils
@@ -102,6 +103,10 @@ class ProvTracker:
             self.EXPERIMENT_DIR = f"{experiment_name}_{self.RUN_ID}"
         os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
 
+        self.logger = logging.getLogger(__name__)
+        if verbose: 
+            logging.basicConfig(filename=os.path.join(self.EXPERIMENT_DIR, f'{self.EXPERIMENT_DIR}.log'), level=logging.INFO if verbose else logging.ERROR)
+
         self.INPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "inputs")
         self.SRC_DIR = os.path.join(self.EXPERIMENT_DIR, "src")
         self.OUTPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "outputs")
@@ -115,18 +120,15 @@ class ProvTracker:
             os.makedirs(self.SRC_DIR, exist_ok=True)
 
         self.RUN_NAME = run_name
-        self.verbose = verbose
         self.create_json = create_json_file
         self.create_graph = create_dot_file
         if self.create_graph and not self.create_json: 
             self.create_json = True
-            if self.verbose: 
-                print("[ProvTracker] YPROV4DV_CREATE_JSON_FILE cannot be False when requesting YPROV4DV_CREATE_DOT_FILE, turning it to True")
+            self.logger.info("[ProvTracker] YPROV4DV_CREATE_JSON_FILE cannot be False when requesting YPROV4DV_CREATE_DOT_FILE, turning it to True")
         self.create_svg = create_svg_file
         if self.create_svg and not (self.create_json and self.create_graph): 
             self.create_json, self.create_graph = True, True
-            if self.verbose: 
-                print("[ProvTracker] YPROV4DV_CREATE_JSON_FILE and YPROV4DV_CREATE_DOT_FILE cannot be False when requesting YPROV4DV_CREATE_SVG_FILE, turning them to True")
+            self.logger.info("[ProvTracker] YPROV4DV_CREATE_JSON_FILE and YPROV4DV_CREATE_DOT_FILE cannot be False when requesting YPROV4DV_CREATE_SVG_FILE, turning them to True")
         self.crate_ro_crate = create_rocrate
 
         self.skip_files_larger_than = skip_files_larger_than
@@ -139,13 +141,12 @@ class ProvTracker:
 
         self.start_time = datetime.datetime.now()
 
-        if self.verbose: 
-            print("[ProvTracker] Monitoring started...")
+        self.logger.info("[ProvTracker] Monitoring started...")
 
     def _track_read_path(self, func):
         def wrapper(path, *a, **kw):
             try:
-                log_file(path, "r")
+                log_file(path, "r-auto-")
             except TypeError: pass  # file-like objects, buffers, URLs, etc.
             return func(path, *a, **kw)
         return wrapper
@@ -172,35 +173,33 @@ class ProvTracker:
     
     def _wrapped_pd_plot(self, *args, **kwargs): 
         self.plot_count += 1
-        if self.verbose: 
-            print(f"[ProvTracker] Tracking pandas or seaborn plot...")
+        self.logger.info(f"[ProvTracker] Tracking pandas or seaborn plot...")
 
         x_data = args[0]            
         if isinstance(x_data, (pd.DataFrame, pd.Series, np.ndarray)):
             xfilename = os.path.join(self.INPUTS_DIR, f"data_{self.plot_count}.csv")
             pd.DataFrame(x_data).to_csv(xfilename)
-            log_file(xfilename, "r")
+            log_file(xfilename, "r-auto-")
 
 
         return self._orig_plot(*args, **kwargs)
 
     def _wrapped_plt_plot(self, *args, **kwargs):
         self.plot_count += 1
-        if self.verbose: 
-            print(f"[ProvTracker] Tracking matplotlib plot...")
+        self.logger.info(f"[ProvTracker] Tracking matplotlib plot...")
 
         if len(args) >= 2:
             x_data = args[0]            
             if isinstance(x_data, (pd.Series, np.ndarray)):
                 xfilename = os.path.join(self.INPUTS_DIR, f"xdata_{self.plot_count}.csv")
                 pd.DataFrame(x_data).to_csv(xfilename)
-                log_file(xfilename, "r")
+                log_file(xfilename, "r-auto-")
 
             y_data = args[1]
             if isinstance(y_data, (pd.Series, np.ndarray)):
                 yfilename = os.path.join(self.INPUTS_DIR, f"ydata_{self.plot_count}.csv")
                 pd.DataFrame(y_data).to_csv(yfilename)
-                log_file(yfilename, "r")
+                log_file(yfilename, "r-auto-")
 
         return self._orig_plot(*args, **kwargs)
 
@@ -208,11 +207,9 @@ class ProvTracker:
         try: 
             filename = Path(file).resolve().relative_to(os.getcwd())
         except ValueError: 
-            if self.verbose: 
-                print(f"[ProvTracker] Skipping copying file {file} to {_dir} because not in root dir")
+            self.logger.info(f"[ProvTracker] Skipping copying file {file} to {_dir} because not in root dir")
             return
-        if self.verbose: 
-            print(f"[ProvTracker] Copy File {file} to {_dir}...")
+        self.logger.info(f"[ProvTracker] Copy File {file} to {_dir}...")
         
         file_dst = os.path.join(_dir, filename)
         if file != Path(file_dst).resolve(): 
@@ -221,15 +218,14 @@ class ProvTracker:
         return file_dst
 
     def finalize(self):
-        if self.verbose: 
-            print("[ProvTracker] Script ending. Analyzing changes...")
+        self.logger.info("[ProvTracker] Script ending. Analyzing changes...")
 
         pth = Path(".").absolute()
         end_snapshot = file_utils.snapshot(pth)
         created = end_snapshot.keys() - self.start_snapshot.keys()
         modified = {p for p in self.start_snapshot.keys() & end_snapshot.keys() if self.start_snapshot[p] != end_snapshot[p]}
         for c in created | modified: 
-            log_output(c)
+            log_file(c, mode="w-auto-")
 
         activity = self.doc.activity(self.RUN_NAME, self.start_time.isoformat(), datetime.datetime.now().isoformat())
 
@@ -240,7 +236,7 @@ class ProvTracker:
         reqs = file_utils._requirements_lookup(".")
         if reqs: 
             activity.add_attributes({f"{self.PREFIX}:requirements": reqs})
-            log_input(reqs)
+            log_file(reqs, mode="r-auto-")
         activity.add_attributes({f"{self.PREFIX}:execution_command": " ".join(shlex.quote(c) for c in [sys.executable] + sys.argv)})
         
         builtins.open = self._orig_open
@@ -248,15 +244,18 @@ class ProvTracker:
             if  "r" in perm: 
                 size = os.path.getsize(file) // (1024**2)
                 if size > self.skip_files_larger_than: 
-                    if self.verbose: 
-                        print(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
+                    self.logger.info(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
                     continue
                 file_dst = self.copy_file_to(file, self.INPUTS_DIR)
-                entity = self.doc.entity(file_dst)
+                entity = self.doc.entity(file_dst, other_attributes={
+                    "prov:type": "auto_logged" if "-auto-" in perm else "user_logged"
+                })
                 self.doc.used(activity, entity)
             elif "w" in perm: 
                 file_dst = self.copy_file_to(file, self.OUTPUTS_DIR)
-                entity = self.doc.entity(file_dst)
+                entity = self.doc.entity(file_dst, other_attributes={
+                    "prov:type": "auto_logged" if "-auto-" in perm else "user_logged"
+                })
                 self.doc.wasGeneratedBy(entity, activity)
             
         file_sources = file_utils._get_source_files()
@@ -270,14 +269,12 @@ class ProvTracker:
         if self.create_json: 
             with open(path_json, 'w') as f:
                 f.write(self.doc.serialize())
-            if self.verbose: 
-                print(f"[ProvTracker] Provenance saved to {path_json}")
+            self.logger.info(f"[ProvTracker] Provenance saved to {path_json}")
 
         if self.create_graph: 
             path_graph = os.path.join(self.EXPERIMENT_DIR, output_file)
             utils.save_prov_file(self.doc, self.EXPERIMENT_DIR, path_graph, self.create_graph, self.create_svg)
-            if self.verbose: 
-                print(f"[ProvTracker] Provenance graph to {path_graph}")
+            self.logger.info(f"[ProvTracker] Provenance graph to {path_graph}")
 
         if self.crate_ro_crate: 
             file_utils.create_rocrate_in_dir(self.EXPERIMENT_DIR)
@@ -311,8 +308,7 @@ def untrack_file(path):
     global _instance
     path = Path(path).absolute()
     if path in _instance.ignored_files:
-        if _instance.verbose: 
-            print(f"[ProvTracker] Attempt to untrack {path} when {p} is already in ignored files")
+        _instance.logger.info(f"[ProvTracker] Attempt to untrack {path} when it is already in ignored files")
         return
     _instance.ignored_files.add(path)
 
@@ -320,19 +316,16 @@ def log_file(path, mode):
     global _instance
     path = Path(path).absolute()
     if Path(path) in _instance.ignored_files: 
-        if _instance.verbose: 
-            print(f"[ProvTracker] Ignoring logging of {path} because it is in ignored_files list")
+        _instance.logger.info(f"[ProvTracker] Ignoring logging of {path} because it is in ignored_files list")
         return
 
     if path in _instance.accessed_files.keys(): 
         already_in_mode = _instance.accessed_files[path]
         if already_in_mode != mode: 
-            if _instance.verbose: 
-                print(f"[ProvTracker] Modified logging mode of {path} to \"w\"")
-            _instance.accessed_files[path] = "w"
+            _instance.logger.info(f"[ProvTracker] Modified logging mode of {path} to \"{"w" + mode[1:]}\"")
+            _instance.accessed_files[path] = "w" + mode[1:]
         else: 
-            if _instance.verbose: 
-                print(f"[ProvTracker] Attempt to log {path} when it has already been logged with mode \"{mode}\"")
+            _instance.logger.info(f"[ProvTracker] Attempt to log {path} when it has already been logged with mode \"{mode}\"")
             return
     else: 
         _instance.accessed_files[path] = mode
