@@ -242,9 +242,13 @@ class ProvTracker:
         builtins.open = self._orig_open
         for file, perm in self.accessed_files.items(): 
             if  "r" in perm: 
-                size = os.path.getsize(file) // (1024**2)
-                if size > self.skip_files_larger_than: 
-                    self.logger.info(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
+                try: 
+                    size = os.path.getsize(file) // (1024**2)
+                    if size > self.skip_files_larger_than: 
+                        self.logger.info(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
+                        continue
+                except: 
+                    self.logger.info(f"[ProvTracker] Skipped saving file {file}, file not found.")
                     continue
                 file_dst = self.copy_file_to(file, self.INPUTS_DIR)
                 entity = self.doc.entity(file_dst, other_attributes={
@@ -295,8 +299,25 @@ def start_run(
     verbose : bool = False, 
 ): 
     global _instance
-    _instance = ProvTracker(run_name, provenance_directory, default_namespace, create_json_file, create_dot_file, create_svg_file, create_rocrate, save_input_files_full, save_input_files_subset, skip_files_larger_than, verbose)
+    _instance = ProvTracker(
+        run_name, 
+        provenance_directory, 
+        default_namespace, 
+        create_json_file, 
+        create_dot_file, 
+        create_svg_file, 
+        create_rocrate, 
+        save_input_files_full, 
+        save_input_files_subset, 
+        skip_files_larger_than, 
+        verbose
+    )
     atexit.register(_instance.finalize)
+
+def end_run(): 
+    global _instance
+    _instance.finalize()
+    del _instance
 
 def log_input(path): 
     log_file(path, "r")
