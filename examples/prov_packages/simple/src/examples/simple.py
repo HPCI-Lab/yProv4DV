@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # This script will also be copied in the ro-crate
-from lib import elaborate
+from examples.lib import elaborate
 
 data = pd.read_csv("./assets/results.csv")
 # Not necessary in this case

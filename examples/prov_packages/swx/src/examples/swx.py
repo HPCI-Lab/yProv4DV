@@ -15,8 +15,6 @@ urllib.request.urlretrieve(
    "results.csv"
 )
 
-# This will not be considered as an input but an output, 
-# as the file is generated after the start
 data = pd.read_csv("results.csv")
 
 # In this case this is not necessary,
