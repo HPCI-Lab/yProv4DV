@@ -104,8 +104,9 @@ class ProvTracker:
         os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
 
         self.logger = logging.getLogger(__name__)
+        self.logger_filename = Path(os.path.join(self.EXPERIMENT_DIR, f'{self.EXPERIMENT_DIR}.log')).absolute()
         if verbose: 
-            logging.basicConfig(filename=os.path.join(self.EXPERIMENT_DIR, f'{self.EXPERIMENT_DIR}.log'), level=logging.INFO if verbose else logging.ERROR)
+            logging.basicConfig(filename=self.logger_filename, level=logging.INFO if verbose else logging.ERROR)
 
         self.INPUTS_DIR = os.path.join(self.EXPERIMENT_DIR, "inputs")
         self.SRC_DIR = os.path.join(self.EXPERIMENT_DIR, "src")
@@ -131,7 +132,7 @@ class ProvTracker:
             self.logger.info("[ProvTracker] YPROV4DV_CREATE_JSON_FILE and YPROV4DV_CREATE_DOT_FILE cannot be False when requesting YPROV4DV_CREATE_SVG_FILE, turning them to True")
         self.crate_ro_crate = create_rocrate
 
-        self.skip_files_larger_than = skip_files_larger_than
+        self.skip_files_larger_than = skip_files_larger_than * 10**4 
         self.save_input_files_full = save_input_files_full
         if self.save_input_files_full: 
             self._track_read_calls()
@@ -241,9 +242,11 @@ class ProvTracker:
         
         builtins.open = self._orig_open
         for file, perm in self.accessed_files.items(): 
+            if file == self.logger_filename: continue
             if  "r" in perm: 
                 try: 
-                    size = os.path.getsize(file) // (1024**2)
+                    size = os.path.getsize(file)# // (1024**2)
+                    print(file, size)
                     if size > self.skip_files_larger_than: 
                         self.logger.info(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
                         continue
@@ -316,6 +319,7 @@ def start_run(
 
 def end_run(): 
     global _instance
+    atexit.unregister(_instance.finalize)
     _instance.finalize()
     del _instance
 
@@ -343,8 +347,8 @@ def log_file(path, mode):
     if path in _instance.accessed_files.keys(): 
         already_in_mode = _instance.accessed_files[path]
         if already_in_mode != mode: 
-            _instance.logger.info(f"[ProvTracker] Modified logging mode of {path} to \"{"w" + mode[1:]}\"")
-            _instance.accessed_files[path] = "w" + mode[1:]
+            _instance.logger.info(f"[ProvTracker] Modified logging mode of {path} from \"{already_in_mode}\" to \"{mode}\"")
+            _instance.accessed_files[path] =  mode
         else: 
             _instance.logger.info(f"[ProvTracker] Attempt to log {path} when it has already been logged with mode \"{mode}\"")
             return

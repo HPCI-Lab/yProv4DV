@@ -1,19 +1,23 @@
+import sys
+sys.path.append(".")
+
 import yprov4dv
 # Initialize tracking
 yprov4dv.start_run(
-    create_rocrate=True, 
+    create_rocrate=False, 
     create_json_file=True, 
     create_dot_file=True, 
     create_svg_file=True, 
-    save_input_files_subset=True, # Take only the data plotted
-    skip_files_larger_than=1 # Larger than 1 Mb
+    save_input_files_subset=False, # Take only the data plotted
+    skip_files_larger_than=0.1, # Larger than 100 Kb
+    verbose=True, 
 )
 
 import pandas as pd
 import matplotlib.pyplot as plt
 
 data_path = "assets/Bitcoin-price-USD.csv"
-# yprov4dv.log_input(data_path) 
+yprov4dv.log_input(data_path) 
 data = pd.read_csv(data_path)
 
 # 2. Pre-processing (Make it look nice)
@@ -43,4 +47,6 @@ plt.legend(["Daily Price", "30-Day Average"])
 # 5. Save and Log Output
 output_path = "btc_analysis.png"
 plt.savefig(output_path, dpi=300)
-# yprov4dv.log_output(output_path)
+yprov4dv.log_output(output_path)
+
+yprov4dv.end_run()
