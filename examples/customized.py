@@ -8,7 +8,7 @@ yprov4dv.start_run(
     create_json_file=True, 
     create_dot_file=True, 
     create_svg_file=True, 
-    save_input_files_subset=False, # Take only the data plotted
+    save_input_files_subset=True, # Take only the data plotted
     skip_files_larger_than=0.1, # Larger than 100 Kb
     verbose=True, 
 )

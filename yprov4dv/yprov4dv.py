@@ -72,7 +72,7 @@ class ProvTracker:
             create_dot_file : bool = False, 
             create_svg_file : bool = False, 
             create_rocrate : bool = True,
-            save_input_files_full : bool = True, 
+            save_inputs : bool = True, 
             save_input_files_subset : bool = False,
             skip_files_larger_than : int = 50,
             verbose : bool = False, 
@@ -133,8 +133,8 @@ class ProvTracker:
         self.crate_ro_crate = create_rocrate
 
         self.skip_files_larger_than = skip_files_larger_than * 10**4 
-        self.save_input_files_full = save_input_files_full
-        if self.save_input_files_full: 
+        self.save_inputs = save_inputs
+        if self.save_inputs: 
             self._track_read_calls()
         self.save_input_files_subset = save_input_files_subset
         if self.save_input_files_subset: 
@@ -296,7 +296,7 @@ def start_run(
     create_dot_file : bool = False, 
     create_svg_file : bool = False, 
     create_rocrate : bool = True,
-    save_input_files_full : bool = True, 
+    save_inputs : bool = True, 
     save_input_files_subset : bool = False,
     skip_files_larger_than : int = 50, 
     verbose : bool = False, 
@@ -310,7 +310,7 @@ def start_run(
         create_dot_file, 
         create_svg_file, 
         create_rocrate, 
-        save_input_files_full, 
+        save_inputs, 
         save_input_files_subset, 
         skip_files_larger_than, 
         verbose
