@@ -6,16 +6,15 @@ def run_viz():
     import matplotlib.pyplot as plt
 
     import urllib.request
-    # urllib.request.urlretrieve(
-    # "https://raw.githubusercontent.com/HPCI-Lab/" \
-    # "yProv4DV/main/assets/results.csv",
-    # "assets/results.csv"
-    # )
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/HPCI-Lab/" \
+        "yProv4DV/main/assets/results.csv",
+        "assets/results.csv"
+    )
 
     data_path = "assets/results2.csv"
     # yprov4dv.log_input(data_path) 
     data = pd.read_csv(data_path)
-    print(len(data))
 
     # 2. Pre-processing (Make it look nice)
     data['Date'] = pd.to_datetime(data['Date'])

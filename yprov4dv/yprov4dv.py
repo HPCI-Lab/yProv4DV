@@ -36,6 +36,8 @@ class ProvTracker:
             xr.open_dataset = self._track_read_path(xr.open_dataset)
             self._orig_xr_open_mfdataset = xr.open_mfdataset
             xr.open_mfdataset = self._track_read_path(xr.open_mfdataset)
+            self._orig_xr_open_zarr = xr.open_zarr
+            xr.open_zarr = self._track_read_path(xr.open_zarr)
         except: pass
         try:
             import geopandas as gpd
@@ -68,11 +70,41 @@ class ProvTracker:
         try: 
             import seaborn as sns
             sns_plots = ['scatterplot', 'lineplot', 'barplot', 'histplot', 'boxplot']
+            self.sns_orig_funcs = {}
             for func_name in sns_plots:
                 orig_func = getattr(sns, func_name)
+                self.sns_orig_funcs[func_name] = orig_func
                 setattr(sns, func_name, self._make_sns_wrapper(orig_func))
         except: pass
         
+    def remove_wrappers(self): 
+        builtins.open = self._orig_open
+        pd.read_csv = self._orig_pd_read_csv
+        pd.read_parquet = self._orig_pd_read_parquet
+        pd.read_excel = self._orig_pd_read_excel
+        pd.read_json = self._orig_pd_read_json
+        np.load = self._orig_np_load
+        if self._orig_xr_open_dataset: 
+            import xarray as xr
+            xr.open_dataset = self._orig_xr_open_dataset
+            xr.open_mfdataset = self._orig_xr_open_mfdataset
+            xr.open_zarr = self._orig_xr_open_zarr
+        if self._orig_gpd_read_file: 
+            import geopandas as gpd
+            gpd.read_file = self._orig_gpd_read_file
+        if self._orig_rio_open:
+            import rasterio as rio
+            rio.open = self._orig_rio_open
+        if self._orig_torch_load:
+            import torch
+            torch.load = self._orig_torch_load
+        plt.plot = self._orig_plot
+        pd.plotting._core.PlotAccessor.__call__ = self._orig_pandas_call
+        if self.sns_orig_funcs: 
+            import seaborn as sns
+            for func_name, orig_func in self.sns_orig_funcs.items():
+                setattr(sns, func_name, orig_func)
+    
     def __init__(
             self, 
             run_name : str = "experiment_run", 
@@ -250,7 +282,10 @@ class ProvTracker:
             log_file(reqs, mode="r-auto-")
         activity.add_attributes({f"{self.PREFIX}:execution_command": " ".join(shlex.quote(c) for c in [sys.executable] + sys.argv)})
         
-        builtins.open = self._orig_open
+        # Remove wrappers from functions
+        if self.save_inputs: 
+            self.remove_wrappers()
+
         for file, perm in self.accessed_files.items(): 
             if file == self.logger_filename: continue
             if  "r" in perm: 
@@ -294,7 +329,7 @@ class ProvTracker:
 
         if self.crate_ro_crate: 
             file_utils.create_rocrate_in_dir(self.EXPERIMENT_DIR)
-
+    
 _instance = None
     
 def start_run(
