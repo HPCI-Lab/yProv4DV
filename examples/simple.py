@@ -9,13 +9,13 @@ import seaborn as sns
 # This script will also be copied in the ro-crate
 from lib import elaborate
 
-data = pd.read_csv("./assets/results.csv")
+data = pd.read_csv("./assets/results.csv")[:31]
 # Not necessary in this case
 # yprov4dv.log_input("./assets/results.csv")
 
-data["second_series"] = elaborate(data["points"])
+data["Revenue2"] = elaborate(data["Revenue"])
 
-sns.lineplot(data,x="points", y="second_series")
+sns.lineplot(data,x="Revenue", y="Revenue2")
 plt.savefig("example.png")
 
 # Not necessary in this case

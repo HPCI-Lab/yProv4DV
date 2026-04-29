@@ -19,27 +19,37 @@ class ProvTracker:
     def _track_read_calls(self): 
         self._orig_open = builtins.open
         builtins.open = self._track_read_path(builtins.open)
+        self._orig_pd_read_csv = pd.read_csv
         pd.read_csv = self._track_read_path(pd.read_csv)
+        self._orig_pd_read_parquet = pd.read_parquet
         pd.read_parquet = self._track_read_path(pd.read_parquet)
+        self._orig_pd_read_excel = pd.read_excel
         pd.read_excel = self._track_read_path(pd.read_excel)
+        self._orig_pd_read_json = pd.read_json
         pd.read_json = self._track_read_path(pd.read_json)
+        self._orig_np_load = np.load
         np.load = self._track_read_path(np.load)
 
         try:
             import xarray as xr
+            self._orig_xr_open_dataset = xr.open_dataset
             xr.open_dataset = self._track_read_path(xr.open_dataset)
+            self._orig_xr_open_mfdataset = xr.open_mfdataset
             xr.open_mfdataset = self._track_read_path(xr.open_mfdataset)
         except: pass
         try:
             import geopandas as gpd
+            self._orig_gpd_read_file = gpd.read_file
             gpd.read_file = self._track_read_path(gpd.read_file)
         except: pass
         try:
             import rasterio as rio
+            self._orig_rio_open = rio.open
             rio.open = self._track_read_path(rio.open)
         except: pass
         try:
             import torch
+            self._orig_torch_load = torch.load
             torch.load = self._track_read_path(torch.load)
         except: pass
 
@@ -246,7 +256,6 @@ class ProvTracker:
             if  "r" in perm: 
                 try: 
                     size = os.path.getsize(file)# // (1024**2)
-                    print(file, size)
                     if size > self.skip_files_larger_than: 
                         self.logger.info(f"[ProvTracker] Skipped saving file {file} since larger than {self.skip_files_larger_than} Mb ({size} Mb)")
                         continue

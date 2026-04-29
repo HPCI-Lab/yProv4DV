@@ -21,7 +21,6 @@ gh_context/
 *.png
 
 prov_*
-*.zip
 
 !examples/prov_packages
 !examples/rocrates

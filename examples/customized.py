@@ -16,7 +16,7 @@ yprov4dv.start_run(
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data_path = "assets/Bitcoin-price-USD.csv"
+data_path = "assets/results.csv"
 yprov4dv.log_input(data_path) 
 data = pd.read_csv(data_path)
 
@@ -29,23 +29,23 @@ recent_data = data.tail(365).copy()
 
 # 3. Use your elaborate function (Simulating a transformation)
 # Let's say we calculate a 30-day moving average
-recent_data["Price_Smoothing"] = recent_data["Price"].rolling(window=30).mean()
+recent_data["Revenue_Smoothing"] = recent_data["Revenue"].rolling(window=30).mean()
 
 # 4. Plotting (This triggers your Monkeypatch)
 # This will capture ONLY the last 365 days of data into your PROV log
-ax = recent_data[["Price", "Price_Smoothing"]].plot(
+ax = recent_data[["Revenue", "Revenue_Smoothing"]].plot(
     figsize=(10, 6), 
-    title="Bitcoin Price Trend (Last Year)",
+    title="Revenue Trend (Last Year)",
     color=['#1f77b4', '#ff7f0e'],
     linewidth=2
 )
 
-plt.ylabel("Price (USD)")
+plt.ylabel("Revenue (USD)")
 plt.grid(True, linestyle='--', alpha=0.7)
-plt.legend(["Daily Price", "30-Day Average"])
+plt.legend(["Daily Revenue", "30-Day Average"])
 
 # 5. Save and Log Output
-output_path = "btc_analysis.png"
+output_path = "result_analysis.png"
 plt.savefig(output_path, dpi=300)
 yprov4dv.log_output(output_path)
 
