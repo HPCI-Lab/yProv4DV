@@ -1,4 +1,31 @@
-data,points
-1,10
-2,20
-3,30
+Date,Region,Product,Units_Sold,Unit_Price,Revenue,Customer_Rating
+2025-01-01,North America,Smartwatch,150,299,44850,4.2
+2025-01-02,Europe,Smartwatch,120,299,35880,4.5
+2025-01-03,Asia,Smartwatch,300,249,74700,4.0
+2025-01-04,North America,Wireless Earbuds,210,149,31290,4.8
+2025-01-05,Europe,Wireless Earbuds,180,149,26820,4.6
+2025-01-06,Asia,Wireless Earbuds,450,129,58050,4.3
+2025-01-07,North America,Tablet,85,499,42415,4.1
+2025-01-08,Europe,Tablet,70,499,34930,4.4
+2025-01-09,Asia,Tablet,150,449,67350,3.9
+2025-01-10,North America,Laptop,45,999,44955,4.7
+2025-01-11,Europe,Laptop,40,999,39960,4.8
+2025-01-12,Asia,Laptop,90,899,80910,4.5
+2025-01-13,North America,Smartwatch,165,299,49335,4.3
+2025-01-14,Europe,Smartwatch,135,299,40365,4.4
+2025-01-15,Asia,Smartwatch,310,249,77190,4.1
+2025-01-16,North America,Wireless Earbuds,225,149,33525,4.9
+2025-01-17,Europe,Wireless Earbuds,195,149,29055,4.7
+2025-01-18,Asia,Wireless Earbuds,470,129,60630,4.4
+2025-01-19,North America,Tablet,95,499,47405,4.2
+2025-01-20,Europe,Tablet,80,499,39920,4.5
+2025-01-21,Asia,Tablet,165,449,74085,4.0
+2025-01-22,North America,Laptop,55,999,54945,4.8
+2025-01-23,Europe,Laptop,50,999,49950,4.9
+2025-01-24,Asia,Laptop,105,899,94395,4.6
+2025-01-25,North America,Smartwatch,180,299,53820,4.4
+2025-01-26,Europe,Smartwatch,150,299,44850,4.6
+2025-01-27,Asia,Smartwatch,330,249,82170,4.2
+2025-01-28,North America,Wireless Earbuds,240,149,35760,4.8
+2025-01-29,Europe,Wireless Earbuds,210,149,31290,4.7
+2025-01-30,Asia,Wireless Earbuds,500,129,64500,4.5
