@@ -54,7 +54,6 @@ class ProvTracker:
             self._orig_torch_load = torch.load
             torch.load = self._track_read_path(torch.load)
         except: pass
-
     def _track_plot_calls(self): 
         self._orig_plot = plt.plot
         plt.plot = self._wrapped_plt_plot
@@ -75,9 +74,8 @@ class ProvTracker:
                 orig_func = getattr(sns, func_name)
                 self.sns_orig_funcs[func_name] = orig_func
                 setattr(sns, func_name, self._make_sns_wrapper(orig_func))
-        except: pass
-        
-    def remove_wrappers(self): 
+        except: pass  
+    def remove_wrappers_open(self): 
         builtins.open = self._orig_open
         pd.read_csv = self._orig_pd_read_csv
         pd.read_parquet = self._orig_pd_read_parquet
@@ -98,6 +96,7 @@ class ProvTracker:
         if self._orig_torch_load:
             import torch
             torch.load = self._orig_torch_load
+    def remove_wrappers_plot(self): 
         plt.plot = self._orig_plot
         pd.plotting._core.PlotAccessor.__call__ = self._orig_pandas_call
         if self.sns_orig_funcs: 
@@ -114,7 +113,6 @@ class ProvTracker:
             create_dot_file : bool = False, 
             create_svg_file : bool = False, 
             create_rocrate : bool = True,
-            save_inputs : bool = True, 
             save_input_files_subset : bool = False,
             skip_files_larger_than : int = 50,
             verbose : bool = False, 
@@ -175,7 +173,21 @@ class ProvTracker:
         self.crate_ro_crate = create_rocrate
 
         self.skip_files_larger_than = skip_files_larger_than * 10**4 
-        self.save_inputs = save_inputs
+
+        self._orig_open = None
+        self._orig_pd_read_csv = None
+        self._orig_pd_read_parquet = None
+        self._orig_pd_read_excel = None
+        self._orig_pd_read_json = None
+        self._orig_np_load = None
+        self._orig_xr_open_dataset = None
+        self._orig_gpd_read_file = None
+        self._orig_rio_open = None
+        self._orig_torch_load = None
+        self._orig_plot = None
+        self.sns_orig_funcs = None
+
+        self.save_inputs = not save_input_files_subset
         if self.save_inputs: 
             self._track_read_calls()
         self.save_input_files_subset = save_input_files_subset
@@ -268,7 +280,9 @@ class ProvTracker:
         created = end_snapshot.keys() - self.start_snapshot.keys()
         modified = {p for p in self.start_snapshot.keys() & end_snapshot.keys() if self.start_snapshot[p] != end_snapshot[p]}
         for c in created | modified: 
+            if str(c).startswith(os.path.abspath(self.EXPERIMENT_DIR)): continue
             log_file(c, mode="w-auto-")
+        accessed_files = self.accessed_files.copy() # stop collection
 
         activity = self.doc.activity(self.RUN_NAME, self.start_time.isoformat(), datetime.datetime.now().isoformat())
 
@@ -284,9 +298,12 @@ class ProvTracker:
         
         # Remove wrappers from functions
         if self.save_inputs: 
-            self.remove_wrappers()
+            self.remove_wrappers_open()
+        if self.save_input_files_subset: 
+            self.remove_wrappers_plot()
 
-        for file, perm in self.accessed_files.items(): 
+        for file, perm in accessed_files.items(): 
+            if str(file).startswith(os.path.abspath(self.EXPERIMENT_DIR)): continue
             if file == self.logger_filename: continue
             if  "r" in perm: 
                 try: 
@@ -340,7 +357,6 @@ def start_run(
     create_dot_file : bool = False, 
     create_svg_file : bool = False, 
     create_rocrate : bool = True,
-    save_inputs : bool = True, 
     save_input_files_subset : bool = False,
     skip_files_larger_than : int = 50, 
     verbose : bool = False, 
@@ -354,7 +370,6 @@ def start_run(
         create_dot_file, 
         create_svg_file, 
         create_rocrate, 
-        save_inputs, 
         save_input_files_subset, 
         skip_files_larger_than, 
         verbose

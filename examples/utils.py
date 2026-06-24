@@ -1,5 +1,6 @@
 import sys
 sys.path.append(".")
+import time
 
 def run_viz(): 
     import pandas as pd
@@ -12,7 +13,7 @@ def run_viz():
         "assets/results.csv"
     )
 
-    data_path = "assets/results2.csv"
+    data_path = "assets/results3.csv"
     # yprov4dv.log_input(data_path) 
     data = pd.read_csv(data_path)
 
@@ -47,21 +48,43 @@ def run_viz():
 # yprov4dv.log_output(output_path)
 
 def run_viz_with_yprov4dv(): 
+    start_time = time.time()
+
     import yprov4dv
     yprov4dv.start_run(
         create_rocrate=False, 
         create_json_file=True, 
         create_dot_file=True, 
         create_svg_file=True, 
-        save_inputs=False, 
-        # save_input_files_subset=True, # Take only the data plotted
+        save_input_files_subset=True, # Take only the data plotted
         # skip_files_larger_than=0.1, # Larger than 100 Kb
         # verbose=True, 
     )
 
+    init_time = time.time() - start_time
+
+    start_time = time.time()
+
     run_viz()
+
+    run_time = time.time() - start_time
+
+    start_time = time.time()
 
     yprov4dv.end_run()
 
+    close_time = time.time() - start_time
+
+    with open("stats.csv", "a+") as f: 
+        f.write(f"{init_time};{run_time};{close_time}\n")
+
+
 if __name__ == "__main__": 
-    run_viz_with_yprov4dv()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-w', '--with_', action='store_true')
+    args = parser.parse_args()
+    if args.with_: 
+        run_viz_with_yprov4dv()
+    else: 
+        run_viz()
