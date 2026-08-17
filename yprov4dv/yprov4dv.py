@@ -1,9 +1,9 @@
 import atexit
+from pathlib import Path
 import os
 import datetime
 import sys
 from prov.model import ProvDocument
-from pathlib import Path
 import shutil
 import shlex
 import pandas as pd
@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import builtins
 import logging
 
+from . import prov_utils
 from . import utils
-from . import file_utils
 
 class ProvTracker:
     def _track_read_calls(self): 
@@ -54,9 +54,12 @@ class ProvTracker:
             self._orig_torch_load = torch.load
             torch.load = self._track_read_path(torch.load)
         except: pass
+    
     def _track_plot_calls(self): 
         self._orig_plot = plt.plot
         plt.plot = self._wrapped_plt_plot
+        self._orig_savefig = plt.savefig
+        plt.savefig = self._wrapped_savefig
 
         self._orig_pandas_call = pd.plotting._core.PlotAccessor.__call__
         tracker_instance = self
@@ -75,6 +78,7 @@ class ProvTracker:
                 self.sns_orig_funcs[func_name] = orig_func
                 setattr(sns, func_name, self._make_sns_wrapper(orig_func))
         except: pass  
+    
     def remove_wrappers_open(self): 
         builtins.open = self._orig_open
         pd.read_csv = self._orig_pd_read_csv
@@ -96,8 +100,10 @@ class ProvTracker:
         if self._orig_torch_load:
             import torch
             torch.load = self._orig_torch_load
+    
     def remove_wrappers_plot(self): 
         plt.plot = self._orig_plot
+        plt.savefig = self._orig_savefig
         pd.plotting._core.PlotAccessor.__call__ = self._orig_pandas_call
         if self.sns_orig_funcs: 
             import seaborn as sns
@@ -115,12 +121,13 @@ class ProvTracker:
             create_rocrate : bool = True,
             save_input_files_subset : bool = False,
             skip_files_larger_than : int = 50,
+            save_code_in_metadata : bool = False, 
             verbose : bool = False, 
         ): 
 
         self.accessed_files = {}
         self.ignored_files = set()
-        self.start_snapshot = file_utils.snapshot(".")
+        self.start_snapshot = utils.snapshot(".")
 
         self.plot_count = 0
 
@@ -138,7 +145,7 @@ class ProvTracker:
         if os.path.exists(self.EXPERIMENT_DIR):
             prev_exps = os.listdir(".") 
             experiment_name = self.EXPERIMENT_DIR.removesuffix("_0")
-            matching_files = [int(exp.split("_")[-1].split(".")[0]) for exp in prev_exps if utils.experiment_matches(experiment_name, exp)]
+            matching_files = [int(exp.split("_")[-1].split(".")[0]) for exp in prev_exps if prov_utils.experiment_matches(experiment_name, exp)]
             self.RUN_ID = max(matching_files)+1  if len(matching_files) > 0 else 0
             self.EXPERIMENT_DIR = f"{experiment_name}_{self.RUN_ID}"
         os.makedirs(self.EXPERIMENT_DIR, exist_ok=True)
@@ -173,6 +180,7 @@ class ProvTracker:
         self.crate_ro_crate = create_rocrate
 
         self.skip_files_larger_than = skip_files_larger_than * 10**4 
+        self.save_code_in_metadata = save_code_in_metadata
 
         self._orig_open = None
         self._orig_pd_read_csv = None
@@ -185,6 +193,7 @@ class ProvTracker:
         self._orig_rio_open = None
         self._orig_torch_load = None
         self._orig_plot = None
+        self._orig_savefig = None
         self.sns_orig_funcs = None
 
         self.save_inputs = not save_input_files_subset
@@ -193,6 +202,9 @@ class ProvTracker:
         self.save_input_files_subset = save_input_files_subset
         if self.save_input_files_subset: 
             self._track_plot_calls()
+
+        self.source_files = utils._get_source_files()
+        self.code_text = utils._get_compressed_source_b64(self.source_files)
 
         self.start_time = datetime.datetime.now()
 
@@ -258,6 +270,19 @@ class ProvTracker:
 
         return self._orig_plot(*args, **kwargs)
 
+    def _wrapped_savefig(self, fname, *args, **kwargs):
+        if self.save_code_in_metadata: 
+            metadata = kwargs.pop("metadata", {})
+            if metadata is None:
+                metadata = {}
+
+            metadata["SourceCode"] = self.code_text
+            metadata["Software"] = "Matplotlib Auto-Embed"
+
+            plt.savefig(fname, *args, metadata=metadata, **kwargs)
+        else: 
+            plt.savefig(fname, *args, **kwargs)
+
     def copy_file_to(self, file, _dir): 
         try: 
             filename = Path(file).resolve().relative_to(os.getcwd())
@@ -276,21 +301,21 @@ class ProvTracker:
         self.logger.info("[ProvTracker] Script ending. Analyzing changes...")
 
         pth = Path(".").absolute()
-        end_snapshot = file_utils.snapshot(pth)
+        end_snapshot = utils.snapshot(pth)
         created = end_snapshot.keys() - self.start_snapshot.keys()
         modified = {p for p in self.start_snapshot.keys() & end_snapshot.keys() if self.start_snapshot[p] != end_snapshot[p]}
         for c in created | modified: 
             if str(c).startswith(os.path.abspath(self.EXPERIMENT_DIR)): continue
             log_file(c, mode="w-auto-")
-        accessed_files = self.accessed_files.copy() # stop collection
+        accessed_files = self.accessed_files.copy()
 
         activity = self.doc.activity(self.RUN_NAME, self.start_time.isoformat(), datetime.datetime.now().isoformat())
 
-        repo = file_utils._get_git_remote_url()
+        repo = utils._get_git_remote_url()
         if repo is not None:
-            commit_hash = file_utils._get_git_revision_hash()
+            commit_hash = utils._get_git_revision_hash()
             activity.add_attributes({f"{self.PREFIX}:source_code": os.path.join(repo, commit_hash)})
-        reqs = file_utils._requirements_lookup(".")
+        reqs = utils._requirements_lookup(".")
         if reqs: 
             activity.add_attributes({f"{self.PREFIX}:requirements": reqs})
             log_file(reqs, mode="r-auto-")
@@ -326,7 +351,7 @@ class ProvTracker:
                 })
                 self.doc.wasGeneratedBy(entity, activity)
             
-        file_sources = file_utils._get_source_files()
+        file_sources = self.source_files
         for file in file_sources: 
             file_dst = self.copy_file_to(file, self.SRC_DIR)
             entity = self.doc.entity(file_dst)
@@ -341,12 +366,13 @@ class ProvTracker:
 
         if self.create_graph: 
             path_graph = os.path.join(self.EXPERIMENT_DIR, output_file)
-            utils.save_prov_file(self.doc, self.EXPERIMENT_DIR, path_graph, self.create_graph, self.create_svg)
+            prov_utils.save_prov_file(self.doc, self.EXPERIMENT_DIR, path_graph, self.create_graph, self.create_svg)
             self.logger.info(f"[ProvTracker] Provenance graph to {path_graph}")
 
         if self.crate_ro_crate: 
-            file_utils.create_rocrate_in_dir(self.EXPERIMENT_DIR)
+            utils.create_rocrate_in_dir(self.EXPERIMENT_DIR)
     
+
 _instance = None
     
 def start_run(
@@ -359,6 +385,7 @@ def start_run(
     create_rocrate : bool = True,
     save_input_files_subset : bool = False,
     skip_files_larger_than : int = 50, 
+    save_code_in_metadata : bool = False, 
     verbose : bool = False, 
 ): 
     global _instance
@@ -372,6 +399,7 @@ def start_run(
         create_rocrate, 
         save_input_files_subset, 
         skip_files_larger_than, 
+        save_code_in_metadata,
         verbose
     )
     atexit.register(_instance.finalize)
